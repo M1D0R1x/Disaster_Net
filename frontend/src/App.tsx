@@ -1,18 +1,21 @@
 import { AlertTriangle, Send } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function App() {
-    const [messages, setMessages] = useState([]);
-    const [message, setMessage] = useState("");
-    const messagesEndRef = useRef(null);
+    const [messages, setMessages] = useState<string[]>([]);
+    const [message, setMessage] = useState<string>("");
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-    // Poll messages
+    // Poll messages every 2 seconds
     useEffect(() => {
         const interval = setInterval(async () => {
             try {
                 const res = await fetch("http://localhost:3001/messages");
-                const data = await res.json();
-                if (Array.isArray(data)) setMessages(data);
+                const data: unknown = await res.json();
+
+                if (Array.isArray(data)) {
+                    setMessages(data as string[]);
+                }
             } catch (err) {
                 console.error("Failed to fetch messages", err);
             }
@@ -21,7 +24,7 @@ export default function App() {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-scroll
+    // Auto scroll to latest message
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -45,6 +48,7 @@ export default function App() {
     return (
         <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-tr from-violet-950 to-violet-500">
             <div className="flex flex-col h-[80vh] sm:w-[80vw] lg:w-[60vw] border-4 border-black rounded-3xl overflow-hidden my-8 shadow-2xl">
+
                 {/* HEADER */}
                 <div className="flex items-center bg-red-700 px-4 py-3">
                     <AlertTriangle className="text-yellow-400 w-12 h-12" />
@@ -72,6 +76,7 @@ export default function App() {
                             No messages yet
                         </div>
                     )}
+
                     <div ref={messagesEndRef} />
                 </div>
 
@@ -85,6 +90,7 @@ export default function App() {
                         onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                         className="flex-1 p-2 rounded-lg bg-slate-600 text-white placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
+
                     <button
                         onClick={sendMessage}
                         className="p-2 rounded-full hover:bg-slate-700 transition"
